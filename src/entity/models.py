@@ -1,8 +1,22 @@
 from datetime import datetime
-
-from sqlalchemy import String, DateTime, Date, func, ForeignKey, Text, Boolean
+from enum import Enum
+from sqlalchemy import (
+    String,
+    DateTime,
+    Date,
+    func,
+    ForeignKey,
+    Text,
+    Boolean,
+    Enum as AlcEnum,
+)
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+
+class UserRole(str, Enum):
+    USER = "USER"
+    ADMIN = "ADMIN"
 
 
 class Base(DeclarativeBase):
@@ -44,6 +58,10 @@ class User(Base):
     contacts: Mapped[list["Contact"]] = relationship("Contact", back_populates="user")
     avatar: Mapped[str] = mapped_column(String(255), nullable=True)
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
+    role: Mapped[UserRole] = mapped_column(
+        AlcEnum(UserRole), default=UserRole.USER, nullable=False
+    )
+    reset_password_token: Mapped[str] = mapped_column(String, nullable=True)
 
 
 class RefreshToken(Base):

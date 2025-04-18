@@ -4,7 +4,7 @@ from datetime import date, timedelta
 
 from typing import Sequence, Optional
 
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.entity.models import Contact
@@ -37,8 +37,8 @@ class ContactsRepository:
         await self.db.refresh(contact)
         return contact
 
-    async def remove_contact(self, contact_id: int, user: User) -> Contact:
-        contact = self.get_contact_by_id(contact_id, user)
+    async def remove_contact(self, contact_id: int, user: User) -> Optional[Contact]:
+        contact = await self.get_contact_by_id(contact_id, user)
         if contact:
             await self.db.delete(contact)
             await self.db.commit()
@@ -52,8 +52,8 @@ class ContactsRepository:
             update_data = body.model_dump(exclude_unset=True)
             for key, val in update_data.items():
                 setattr(contact, key, val)
-        await self.db.commit()
-        await self.db.refresh(contact)
+            await self.db.commit()
+            await self.db.refresh(contact)
         return contact
 
     async def search_contacts(
@@ -83,7 +83,7 @@ class ContactsRepository:
         stmt = (
             select(Contact)
             .filter_by(user_id=user.id)
-            .where((Contact.birthday >= today & (Contact.birthday <= end_date)))
+            .where(and_(Contact.birthday >= today, Contact.birthday <= end_date))
         )
         contacts = await self.db.execute(stmt)
         return contacts.scalars().all()

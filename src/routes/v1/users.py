@@ -13,7 +13,12 @@ from slowapi.util import get_remote_address
 
 from src.schemas.user import UserResponse
 from src.entity.models import User
-from src.utils.get_services import get_auth_service, get_user_service, get_current_user
+from src.utils.get_services import (
+    get_auth_service,
+    get_user_service,
+    get_current_user,
+    get_current_admin_user,
+)
 from src.utils.email_token import get_email_from_token
 from src.services.auth import AuthService, oauth2_scheme
 from src.services.user import UserService
@@ -21,7 +26,6 @@ from src.schemas.email import RequestEmail
 from src.services.email import send_email
 from src.conf.config import settings
 from src.services.upload_file import UploadFileService
-
 
 router = APIRouter(prefix="/users", tags=["users"])
 Limiter = Limiter(key_func=get_remote_address)
@@ -70,7 +74,7 @@ async def request_email(
 
     if user:
         background_tasks.add_task(
-            send_email, user.email, user.username, request.base_url
+            send_email, user.email, user.username, str(request.base_url)
         )
     return {"message": "Check your email address"}
 
@@ -80,9 +84,12 @@ async def update_avatar_user(
     file: UploadFile = File(),
     user: User = Depends(get_current_user),
     user_service: UserService = Depends(get_user_service),
+    admin=Depends(get_current_admin_user),
 ):
+
     avatar_url = UploadFileService(
         settings.CLD_NAME, settings.CLD_API_KEY, settings.CLD_API_SECRET
     ).upload_file(file, user.username)
     user = await user_service.update_avatar_url(user.email, avatar_url)
     return user
+

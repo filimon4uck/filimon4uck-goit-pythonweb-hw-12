@@ -16,7 +16,7 @@ class ContactsService:
         return await self.contacts_repository.get_contacts(limit, offset, user)
 
     async def ge_contact_by_id(self, contact_id: int, user: User):
-        return self.contacts_repository.get_contact_by_id(contact_id, user)
+        return await self.contacts_repository.get_contact_by_id(contact_id, user)
 
     async def update_contact(self, contact_id: int, body: UpdateContact, user: User):
         return await self.contacts_repository.update_contact(contact_id, body, user)

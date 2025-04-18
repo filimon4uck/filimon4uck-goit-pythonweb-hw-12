@@ -18,9 +18,9 @@ class CreateContact(BaseContact):
     pass
 
 
-class UpdateContact(BaseContact):
+class UpdateContact(BaseModel):
     first_name: Optional[str] = None
-    last_name_name: Optional[str] = None
+    last_name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
     birthday: Optional[str] = None

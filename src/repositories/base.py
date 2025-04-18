@@ -30,8 +30,8 @@ class BaseRepository:
         return instance
 
     async def update(self, instance: ModelType) -> ModelType:
-        self.db.commit()
-        self.db.refresh(instance)
+        await self.db.commit()
+        await self.db.refresh(instance)
         return instance
 
     async def delete(self, instance: ModelType) -> None:

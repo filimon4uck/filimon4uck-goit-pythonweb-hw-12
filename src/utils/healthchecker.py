@@ -10,6 +10,13 @@ router = APIRouter(prefix="/health", tags=["HealthCheck"])
 
 @router.get("/")
 async def healthchecker(db: AsyncSession = Depends(get_db)):
+    """
+    Perform a health check for the API.
+
+    - Verifies if the API is up and running.
+    - Tests the database connection with a `SELECT 1` query.
+    - Returns a success message or an error if the database connection fails.
+    """
     try:
         result = await db.execute(text("SELECT 1"))
         result = result.fetchone()

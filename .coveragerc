@@ -1,0 +1,2 @@
+[run]
+omit = src\database\db.py ,  src\utils\reset_password_token.py

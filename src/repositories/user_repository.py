@@ -17,7 +17,8 @@ class UserRepository(BaseRepository):
     async def get_by_username(self, username: str) -> User | None:
         stmt = select(self.model).where(self.model.username == username)
         user = await self.db.execute(stmt)
-        return user.scalar_one_or_none()
+        if user:
+            return user.scalar_one_or_none()
 
     async def get_by_email(self, email: str) -> User | None:
         stmt = select(self.model).where(self.model.email == email)
@@ -36,12 +37,30 @@ class UserRepository(BaseRepository):
 
     async def confirmed_email(self, email: str) -> None:
         user = await self.get_by_email(email)
+        if not user:
+            return
         user.confirmed = True
         await self.db.commit()
 
     async def update_avatar_url(self, email: str, url: str) -> User:
         user = await self.get_by_email(email)
-        user.avatar = url
-        await self.db.commit()
-        await self.db.refresh(user)
+        if user:
+            user.avatar = url
+            await self.db.commit()
+            await self.db.refresh(user)
         return user
+
+    async def change_password(self, email: str, new_hashed_password: str) -> None:
+        user = await self.get_by_email(email)
+        if not user:
+            return
+        user.hashed_password = new_hashed_password
+        user.reset_password_token = None
+        await self.db.commit()
+
+    async def add_reset_password_token(self, email: str, token: str) -> None:
+        user = await self.get_by_email(email)
+        if not user:
+            return
+        user.reset_password_token = token
+        await self.db.commit()
